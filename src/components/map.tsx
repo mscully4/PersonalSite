@@ -8,19 +8,18 @@ import {
   GRANULARITIES,
   granularitySwitcher,
 } from "../utils/mapping";
-import Place from "../types/place";
-import Destination from "../types/destination";
+import { TravelDestination, TravelPlace } from "../types/travel";
 
 interface MapProps {
-  destinations: Destination[];
-  renderablePlaces: Place[];
+  destinations: TravelDestination[];
+  renderablePlaces: TravelPlace[];
   hoverId: string | null;
   setHoverId: (value: string | null) => void;
   setMapRef: (value: SetStateAction<MapRef | undefined>) => void;
   mapGranularity: GRANULARITIES;
   setMapGranularity: (zoom: number) => void;
   updateRenderablePlaces: () => void;
-  setPreparedImages: (place: Place) => void;
+  setPreparedImages: (place: TravelPlace) => void;
   setGalleryOpen: (prevState: boolean) => void;
   isVisible: boolean;
 }
@@ -32,8 +31,8 @@ function Map(props: MapProps) {
     if (mapRef.current) props.setMapRef(mapRef.current);
   }, [mapRef.current]);
 
-  const generateMarkers = (data: Destination[] | Place[]) => {
-    return data.map((el: Destination | Place, i: number) => (
+  const generateMarkers = (data: TravelDestination[] | TravelPlace[]) => {
+    return data.map((el: TravelDestination | TravelPlace, i: number) => (
       <Marker
         key={i}
         mapRef={mapRef.current}
@@ -54,6 +53,7 @@ function Map(props: MapProps) {
       props.renderablePlaces
     )
   );
+
   return (
     <MapboxMap
       initialViewState={{

@@ -1,56 +1,72 @@
 import { useState, useEffect } from "react";
 import Gallery from "react-photo-gallery";
-import preval from "preval.macro";
+// import preval from "preval.macro";
 import { makeStyles, Theme } from "@material-ui/core/styles";
 import { API_HOME_PHOTOS } from "../utils/backend";
 import { getRandomSubarray } from "../utils/formulas";
 import { objectKeysSnakeCasetoCamelCase } from "../utils/backend";
-import Photo from "../types/photo";
+import { generateClient } from "aws-amplify/api";
+import { Schema } from "../../amplify/data/resource";
+import { TravelPhoto } from "../types/travel";
+
+const client = generateClient<Schema>();
+
 
 const NUMBER_OF_PHOTOS = 100;
 
-const styles = makeStyles((theme: Theme) => ({
-  container: {
-    height: "100%",
-  },
-  gallery: {
-    height: "100%",
-    overflow: "scroll",
-    scrollbarWidth: "none",
-    "&::-webkit-scrollbar": {
-      display: "none",
-    },
-  },
-  buildInfo: {
-    textAlign: "center",
-  },
-}));
+// const styles = makeStyles((theme: Theme) => ({
+//   container: {
+//     height: "100%",
+//   },
+//   gallery: {
+//     height: "100%",
+//     overflow: "scroll",
+//     scrollbarWidth: "none",
+//     "&::-webkit-scrollbar": {
+//       display: "none",
+//     },
+//   },
+//   buildInfo: {
+//     textAlign: "center",
+//   },
+// }));
+
+interface HomeGalleryPhoto {
+  height: number;
+  width: number;
+  src: string;
+}
 
 export default function Home() {
-  const classes = styles();
-
-  const [images, setImages] = useState<Photo[]>([]);
+  const [images, setImages] = useState<HomeGalleryPhoto[]>([]);
 
   useEffect(() => {
-    fetch(API_HOME_PHOTOS)
-      .then((res) => res.json())
-      .then((json) => json.map((el) => el.Entity))
-      .then((json) => {
-        json.map((obj) => {
-          obj.width = parseInt(obj.width);
-          obj.height = parseInt(obj.height);
-          return objectKeysSnakeCasetoCamelCase(obj);
-        });
-        setImages(getRandomSubarray(json, NUMBER_OF_PHOTOS));
-      });
+    client.models.HomePhoto.list().then((resp) => {
+      console.log(resp);
+      setImages(resp.data.map((obj) => (
+        {
+          width: parseInt(obj.width),
+          height: parseInt(obj.height),
+          src: obj.src
+        }
+      )))
+    })
   }, []);
 
   return (
-    <div className={classes.container}>
-      <div className={classes.gallery}>
+    <div style={{
+      height: "100%",
+    }}>
+      <div style={{
+        height: "100%",
+        overflow: "scroll",
+        scrollbarWidth: "none",
+      }}>
         <Gallery photos={images} />
-        <p className={classes.buildInfo}>
-          Build Date: {preval`module.exports = new Date().toLocaleString();`}.
+        <p style={{
+          textAlign: 'center'
+        }}>
+          {/* Build Date: {preval`module.exports = new Date().toLocaleString();`}. */}
         </p>
       </div>
     </div>

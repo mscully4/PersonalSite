@@ -15,20 +15,21 @@ const schema = a
     Destination: a
       .model({
         destinationId: a.string().required(),
+        placeId: a.string().required(),
         country: a.string().required(),
+        countryCode: a.string().required(),
         coords: a.ref('Coords').required(),
         name: a.string().required(),
         places: a.hasMany('Place', 'destinationId'),
       })
-      .identifier(['destinationId'])
-      .authorization((allow) => [allow.publicApiKey().to(['read'])]),
+      .identifier(['destinationId']),
     Place: a
       .model({
         placeId: a.string().required(),
         address: a.string(),
         city: a.string(),
         state: a.string(),
-        zipCode: a.string(),
+        // zipCode: a.string(),
         country: a.string(),
         destinationId: a.string().required(),
         destination: a.belongsTo('Destination', 'destinationId'),
@@ -62,8 +63,19 @@ const schema = a
 
       })
       .identifier(['albumId', 'photoId']),
+      HomePhoto: a
+      .model({
+        photoId: a.string().required(),
+        src: a.string().required(),
+        width: a.string().required(),
+        height: a.string().required(),
+        hsh: a.string().required()
+
+      })
+      .identifier(['photoId']),
   })
-  .authorization((allow) => [allow.publicApiKey().to(['read'])]);
+  .authorization((allow) => [allow.publicApiKey()]);
+  // .authorization((allow) => [allow.publicApiKey().to(['read'])]);
 
 export type Schema = ClientSchema<typeof schema>;
 

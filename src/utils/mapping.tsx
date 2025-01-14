@@ -1,4 +1,4 @@
-export const MAPBOX_TOKEN = process.env.REACT_APP_MAPBOX_TOKEN;
+export const MAPBOX_TOKEN = 'pk.eyJ1IjoibXNjdWxseTQiLCJhIjoiY2w2aWdjZTFsMHVxcDNjbno4bXMybmxjMSJ9.RWEQrGJbRNSeptROyPiiQg';
 
 export const DEFAULT_CENTER = { lat: 30.2672, lng: -97.7431 }; // Austin, Texas
 // With zoom, lower means zoomed out more and vice versa

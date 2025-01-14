@@ -1,106 +1,101 @@
-import clsx from "clsx";
 import ReactCountryFlag from "react-country-flag";
 import { MapRef } from "react-map-gl";
 import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import { makeStyles, Theme } from "@material-ui/core/styles";
 import {
   GRANULARITIES,
   granularitySwitcher,
   GRANULARITY_CUTOFF,
 } from "../utils/mapping";
-import Destination from "../types/destination";
-import Place from "../types/place";
-import Photo from "../types/photo";
+import { TravelDestination, TravelPlace, TravelPhoto } from "../types/travel";
 import { Dispatch, SetStateAction } from "react";
 import CircularProgress from "@mui/material/CircularProgress";
 
 import { BreakpointKeys, Orientation } from "../utils/display";
 import { noImages } from "../utils/images";
+import { useTheme } from "@mui/material";
 
-const styles = makeStyles((theme: Theme) => ({
-  container: {
-    height: "100%",
-    width: "100%",
-    display: "grid",
-    gridTemplateColumns: "1fr",
-    gridAutoRows: "40px 1fr",
-    overflowY: "hidden",
-    alignItems: "center",
-  },
-  grid: {
-    width: "100%",
-    height: "100%",
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    justifyItems: "center",
-    alignItems: "center",
-    overflowY: "scroll",
-  },
-  card: {
-    height: "90%",
-    width: "90%",
-    cursor: "pointer",
-    display: "grid",
-    alignItems: "center",
-    gridTemplateColumns: "1fr",
-    gridTemplateRows: "minmax(0, 2fr) minmax(0, 1fr)",
-    borderRadius: 10,
-    "&:hover": {
-      height: "92%",
-      width: "92%",
-      boxShadow: theme.shadows[20],
-    },
-  },
-  cardContent: {
-    display: "grid",
-    gridTemplateColumns: "minmax(0, 5fr) minmax(0, 1fr)",
-    gridTemplateRows: "1fr",
-    alignItems: "center",
-    height: "100%",
-    padding: "6px !important",
-  },
-  cardText: {
-    fontFamily: "EB Garamond, serif !important",
-    fontSize: "12px !important",
-    padding: "0 !important",
-    marginLeft: "10px !important",
-  },
-  cardImage: {
-    maxWidth: "100%",
-    maxHeight: "100%",
-    margin: "auto",
-  },
-  spinner: {
-    margin: "auto",
-  },
-}));
+// const styles = makeStyles((theme: Theme) => ({
+  // container: {
+  //   height: "100%",
+  //   width: "100%",
+  //   display: "grid",
+  //   gridTemplateColumns: "1fr",
+  //   gridAutoRows: "40px 1fr",
+  //   overflowY: "hidden",
+  //   alignItems: "center",
+  // },
+  // grid: {
+  //   width: "100%",
+  //   height: "100%",
+  //   display: "grid",
+  //   gridTemplateColumns: "1fr 1fr",
+  //   justifyItems: "center",
+  //   alignItems: "center",
+  //   overflowY: "scroll",
+  // },
+  // card: {
+  //   height: "90%",
+  //   width: "90%",
+  //   cursor: "pointer",
+  //   display: "grid",
+  //   alignItems: "center",
+  //   gridTemplateColumns: "1fr",
+  //   gridTemplateRows: "minmax(0, 2fr) minmax(0, 1fr)",
+  //   borderRadius: 10,
+  //   "&:hover": {
+  //     height: "92%",
+  //     width: "92%",
+  //     boxShadow: theme.shadows[20],
+  //   },
+  // },
+  // cardContent: {
+  //   display: "grid",
+  //   gridTemplateColumns: "minmax(0, 5fr) minmax(0, 1fr)",
+  //   gridTemplateRows: "1fr",
+  //   alignItems: "center",
+  //   height: "100%",
+  //   padding: "6px !important",
+  // },
+  // cardText: {
+  //   fontFamily: "EB Garamond, serif !important",
+  //   fontSize: "12px !important",
+  //   padding: "0 !important",
+  //   marginLeft: "10px !important",
+  // },
+  // cardImage: {
+  //   maxWidth: "100%",
+  //   maxHeight: "100%",
+  //   margin: "auto",
+  // },
+  // spinner: {
+  //   margin: "auto",
+  // },
+// }));
 
 interface CardGalleryProps {
-  destinations: Destination[];
-  destinationCardPhotos: Record<string, Photo>;
-  places: Record<string, Place[]>;
-  renderablePlaces: Place[];
+  destinations: TravelDestination[];
+  destinationCardPhotos: Record<string, TravelPhoto>;
+  places: Record<string, TravelPlace[]>;
+  renderablePlaces: TravelPlace[];
   mapGranularity: GRANULARITIES;
   setHoverId: (value: string | null) => void;
   mapRef: MapRef | undefined;
-  photos: Record<string, Photo[]>;
-  setPreparedImages: (place: Place) => void;
+  photos: Record<string, TravelPhoto[]>;
+  setPreparedImages: (place: TravelPlace) => void;
   setGalleryOpen: Dispatch<SetStateAction<boolean>>;
   photosLoaded: boolean;
   mediaQueries: Record<Orientation, Partial<Record<number, boolean>>>;
 }
 
 export default function cardGallery(props: CardGalleryProps) {
-  const classes = styles();
-
-  const cardOnMouseOver = (data: Destination | Place) => {
+  const cardOnMouseOver = (data: TravelDestination | TravelPlace) => {
     props.setHoverId(data.placeId);
     if (props.mapRef) {
       props.mapRef?.flyTo({
-        center: [data.longitude, data.latitude],
+        center: [data.coords.lng, data.coords.lat],
         zoom: props.mapRef.getZoom(),
       });
     }
@@ -110,26 +105,42 @@ export default function cardGallery(props: CardGalleryProps) {
     props.setHoverId(null);
   };
 
-  const onCardClickDestination = (e, destination: Destination) => {
+  const onCardClickDestination = (e, destination: TravelDestination) => {
     props.mapRef?.flyTo({
-      center: [destination.longitude, destination.latitude],
+      center: [destination.coords.lng, destination.coords.lat],
       zoom: GRANULARITY_CUTOFF + 1,
       duration: 2000,
     });
   };
 
-  const onCardClickPlace = (e, place: Place) => {
+  const onCardClickPlace = (e, place: TravelPlace) => {
     props.setPreparedImages(place);
     props.setGalleryOpen(true);
   };
 
-  const generateDestinationCards = (destination: Destination) => {
+  const theme = useTheme();
+
+  const generateDestinationCards = (destination: TravelDestination) => {
     const photo = props.destinationCardPhotos[destination.placeId];
     const imageSrc = photo ? photo.thumbnailSrc : noImages;
     return (
       <Card
-        className={clsx(classes.card)}
         style={{ borderRadius: 10 }}
+        sx={{
+          height: "90%",
+          width: "90%",
+          cursor: "pointer",
+          display: "grid",
+          alignItems: "center",
+          gridTemplateColumns: "1fr",
+          gridTemplateRows: "minmax(0, 2fr) minmax(0, 1fr)",
+          borderRadius: 10,
+          "&:hover": {
+            height: "92%",
+            width: "92%",
+            boxShadow: theme.shadows[20],
+          },
+        }}
         onMouseOver={() => cardOnMouseOver(destination)}
         onMouseOut={cardOnMouseOut}
         onClick={(e) => onCardClickDestination(e, destination)}
@@ -138,18 +149,36 @@ export default function cardGallery(props: CardGalleryProps) {
           <CardMedia
             component="img"
             image={imageSrc}
-            classes={{
-              media: classes.cardImage,
+            sx={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              margin: "auto",
             }}
+            // classes={{
+            //   media: classes.cardImage,
+            // }}
           />
         ) : (
-          <CircularProgress className={classes.spinner} />
+          <CircularProgress style={{ margin: 'auto'}} />
         )}
-        <CardContent className={clsx(classes.cardContent)}>
+        <CardContent sx={{
+          display: "grid",
+          gridTemplateColumns: "minmax(0, 5fr) minmax(0, 1fr)",
+          gridTemplateRows: "1fr",
+          alignItems: "center",
+          height: "100%",
+          padding: "6px !important",
+        }}>
           <Typography
-            className={clsx(classes.cardText)}
-            classes={{
-              root: classes.cardText,
+            // className={clsx(classes.cardText)}
+            // classes={{
+            //   root: classes.cardText,
+            // }}
+            sx={{
+              fontFamily: "EB Garamond, serif !important",
+              fontSize: "12px !important",
+              padding: "0 !important",
+              marginLeft: "10px !important",
             }}
             variant="body1"
             color="text.primary"
@@ -172,15 +201,29 @@ export default function cardGallery(props: CardGalleryProps) {
     );
   };
 
-  const generatePlaceCard = (place: Place) => {
+  const generatePlaceCard = (place: TravelPlace) => {
     const photo =
       place.placeId in props.photos ? props.photos[place.placeId][0] : null;
     const imageSrc = photo ? photo.thumbnailSrc : noImages;
 
     return (
       <Card
-        className={clsx(classes.card)}
         style={{ borderRadius: 10 }}
+        sx={{
+          height: "90%",
+          width: "90%",
+          cursor: "pointer",
+          display: "grid",
+          alignItems: "center",
+          gridTemplateColumns: "1fr",
+          gridTemplateRows: "minmax(0, 2fr) minmax(0, 1fr)",
+          borderRadius: 10,
+          "&:hover": {
+            height: "92%",
+            width: "92%",
+            boxShadow: theme.shadows[20],
+          },
+        }}
         onMouseOver={() => cardOnMouseOver(place)}
         onMouseOut={cardOnMouseOut}
         onClick={(e) => onCardClickPlace(e, place)}
@@ -189,18 +232,29 @@ export default function cardGallery(props: CardGalleryProps) {
           <CardMedia
             component="img"
             image={imageSrc}
-            classes={{
-              media: classes.cardImage,
+            sx={{
+              maxWidth: "100%",
+              maxHeight: "100%",
+              margin: "auto",
             }}
+            // classes={{
+            //   media: classes.cardImage,
+            // }}
           />
         ) : (
-          <CircularProgress className={classes.spinner} />
+          <CircularProgress /> // className={classes.spinner} />
         )}
         <CardContent>
           <Typography
-            className={clsx(classes.cardText)}
-            classes={{
-              root: classes.cardText,
+            // className={clsx(classes.cardText)}
+            // classes={{
+            //   root: classes.cardText,
+            // }}
+            sx={{
+              fontFamily: "EB Garamond, serif !important",
+              fontSize: "12px !important",
+              padding: "0 !important",
+              marginLeft: "10px !important",
             }}
             variant="body1"
             color="text.primary"
@@ -243,10 +297,16 @@ export default function cardGallery(props: CardGalleryProps) {
 
   return (
     <div
-      className={classes.grid}
       style={{
         gridAutoRows: gridAutoRows,
         gridTemplateColumns: gridTemplateColumns,
+        width: "100%",
+        height: "100%",
+        display: "grid",
+        // gridTemplateColumns: "1fr 1fr",
+        justifyItems: "center",
+        alignItems: "center",
+        overflowY: "scroll",
       }}
     >
       {cards}

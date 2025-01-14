@@ -1,10 +1,10 @@
-import Photo from "../types/photo";
 import Viewer from "react-viewer";
+import { TravelPhoto } from "../types/travel";
 
 interface ImageViewerProps {
   isOpen: boolean;
   toggleViewer: (value: boolean) => void;
-  views: Photo[];
+  views: TravelPhoto[];
   currentIndex: number;
 }
 

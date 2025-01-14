@@ -1,36 +1,8 @@
-import clsx from "clsx";
-import { makeStyles, Theme } from "@material-ui/core/styles";
-import { AppBar, Box, Toolbar, Typography } from "@material-ui/core";
 import { BreakpointKeys, Orientation } from "../utils/display";
 import { NavIcon, navIcons } from "../utils/images";
 import SvgIcon from "@mui/material/SvgIcon";
+import { AppBar, Box, Toolbar, Typography, useTheme } from "@mui/material";
 
-const styles = makeStyles((theme: Theme) => ({
-  navigationBar: {
-    backgroundColor: theme.palette.common.white,
-    position: "relative",
-    boxSizing: "border-box",
-  },
-  title: {
-    fontFamily: "Allura",
-    color: theme.palette.text.primary,
-  },
-  menu: {
-    textAlign: "right",
-    width: "100%",
-  },
-  card: {
-    marginLeft: 5,
-    marginRight: 5,
-    display: "flex",
-    alignItems: "center",
-  },
-  icon: {
-    "&:hover": {
-      fill: theme.palette.primary.main,
-    },
-  },
-}));
 
 interface NavigationProps {
   height: number;
@@ -38,16 +10,25 @@ interface NavigationProps {
 }
 
 export default function Navigation(props: NavigationProps) {
-  const classes = styles();
+  const theme = useTheme();
 
   const createIcon = (navIcon: NavIcon) => {
     return (
-      <a href={navIcon.href} title={navIcon.title} className={classes.card}>
+      <a href={navIcon.href} title={navIcon.title} style={{
+        marginLeft: 5,
+        marginRight: 5,
+        display: "flex",
+        alignItems: "center",
+      }}>
         <SvgIcon
           viewBox={navIcon.viewBox}
           fontSize={"large"}
           htmlColor={"#000"}
-          className={classes.icon}
+          sx={{
+            "&:hover": {
+              fill: theme.palette.primary.main,
+            }
+          }}
         >
           {navIcon.paths.map((path, i) => (
             <path key={i} d={path}></path>
@@ -61,14 +42,22 @@ export default function Navigation(props: NavigationProps) {
     <Box sx={{ flexGrow: 1, height: props.height }}>
       <AppBar
         position="static"
-        className={classes.navigationBar}
-        style={{ height: props.height, overflow: "hidden" }}
+        sx={{
+          backgroundColor: theme.palette.common.white,
+          position: "relative",
+          boxSizing: "border-box",
+          height: props.height,
+          overflow: "hidden"
+        }}
       >
         <Toolbar style={{ height: "100%" }}>
           <Typography
             variant="h5"
-            style={{ fontSize: `min(5vw, ${props.height * 0.7}px)` }}
-            className={clsx(classes.title)}
+            sx={{
+              fontSize: `min(5vw, ${props.height * 0.7}px)`,
+              fontFamily: "Allura",
+              color: theme.palette.text.primary,
+            }}
           >
             Michael Scully
           </Typography>
@@ -79,5 +68,6 @@ export default function Navigation(props: NavigationProps) {
         </Toolbar>
       </AppBar>
     </Box>
+
   );
 }

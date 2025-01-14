@@ -1,8 +1,6 @@
 import { useState } from "react";
 import { Marker as MapboxMarker, Popup, PointLike, MapRef } from "react-map-gl";
-import { makeStyles, Theme } from "@material-ui/core/styles";
-import Destination from "../types/destination";
-import Place from "../types/place";
+import { TravelDestination, TravelPlace } from "../types/travel";
 import {
   DEFAULT_PLACE_ZOOM,
   GRANULARITIES,
@@ -10,34 +8,33 @@ import {
 } from "../utils/mapping";
 import { randomPinColor } from "../utils/colors";
 
-const styles = makeStyles((theme: Theme) => ({
-  pinIcon: {
-    height: 41,
-    width: 27,
-    viewBox: "0 0 27 41",
-    display: "block",
-    cursor: "pointer",
-  },
-  popUp: {
-    zIndex: 999999,
-  },
-}));
+// const styles = makeStyles((theme: Theme) => ({
+//   pinIcon: {
+//     height: 41,
+//     width: 27,
+//     viewBox: "0 0 27 41",
+//     display: "block",
+//     cursor: "pointer",
+//   },
+//   popUp: {
+//     zIndex: 999999,
+//   },
+// }));
 
 interface MarkerProps {
-  data: Destination | Place;
+  data: TravelDestination | TravelPlace;
   hoverId: string | null;
   setHoverId: (val: string | null) => void;
   mapRef: MapRef | null;
   mapGranularity: GRANULARITIES;
-  setPreparedImages: (place: Place) => void;
+  setPreparedImages: (place: TravelPlace) => void;
   setGalleryOpen: (prevState: boolean) => void;
 }
 
 function Marker(props: MarkerProps) {
-  const classes = styles();
   // store the color in state so that it stays consistent across renders
   const [color, setColor] = useState<string>(randomPinColor());
-  const { latitude, longitude, placeId } = props.data;
+  const { coords, placeId } = props.data;
 
   const offset: Record<string, PointLike> = {
     bottom: [0, -44],
@@ -47,24 +44,24 @@ function Marker(props: MarkerProps) {
   };
 
   const onClickDestination = () => {
-    props.mapRef?.setCenter([longitude, latitude]);
+    props.mapRef?.setCenter([coords.lng, coords.lat]);
     props.mapRef?.zoomTo(DEFAULT_PLACE_ZOOM);
   };
 
   const onClickPlace = () => {
-    props.setPreparedImages(props.data as Place);
+    props.setPreparedImages(props.data as TravelPlace);
     props.setGalleryOpen(true);
   };
 
   // The more south a marker, the higher its z-index
-  const calculatedZIndex = Math.trunc((props.data.latitude * -1 + 90) * 1000);
+  const calculatedZIndex = Math.trunc((coords.lat * -1 + 90) * 1000);
 
   const markerOffset: PointLike = [0, 5];
 
   return (
     <MapboxMarker
-      longitude={props.data.longitude}
-      latitude={props.data.latitude}
+      longitude={coords.lng}
+      latitude={coords.lat}
       anchor={"bottom"}
       offset={markerOffset}
       style={{
@@ -73,7 +70,13 @@ function Marker(props: MarkerProps) {
       }}
     >
       <svg
-        className={classes.pinIcon}
+        style={{
+          height: 41,
+          width: 27,
+          viewBox: "0 0 27 41",
+          display: "block",
+          cursor: "pointer",
+        }}
         onMouseEnter={() => props.setHoverId(placeId)}
         onMouseLeave={() => props.setHoverId(null)}
         onClick={granularitySwitcher(
@@ -107,12 +110,14 @@ function Marker(props: MarkerProps) {
       </svg>
       {props.hoverId === placeId ? (
         <Popup
-          longitude={longitude}
-          latitude={latitude}
+          longitude={coords.lng}
+          latitude={coords.lat}
           closeButton={false}
           offset={offset}
           closeOnClick={false}
-          className={classes.popUp}
+          style={{
+            zIndex: 999999,
+          }}
         >
           {props.data.name}, {props.data.country}
         </Popup>
