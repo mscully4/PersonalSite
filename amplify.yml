@@ -9,6 +9,7 @@ frontend:
   phases:
     build:
       commands:
+        - echo "VITE_MAPBOX_TOKEN=$VITE_MAPBOX_TOKEN" >> .env
         - npm run build
   artifacts:
     baseDirectory: dist

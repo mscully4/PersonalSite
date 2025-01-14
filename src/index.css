@@ -1,12 +1,16 @@
 body {
   margin: 0;
-  background: linear-gradient(180deg, rgb(117, 81, 194), rgb(255, 255, 255));
+  background-color: white;
   display: flex;
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   height: 100vh;
   width: 100vw;
   justify-content: center;
   align-items: center;
+}
+
+#root {
+  width: 100%;
 }
 
 main {
@@ -62,4 +66,15 @@ li:hover {
 a {
   font-weight: 800;
   text-decoration: none;
+}
+
+@font-face {
+  font-family: "allura";
+  src: local("Allura"), url("./assets/fonts/Allura.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "EB Garamond";
+  src: local("EB Garamond"),
+    url("./assets/fonts/EBGaramond.ttf") format("truetype");
 }

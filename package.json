@@ -7,13 +7,26 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "format:check": "if-env SKIP_FORMAT=true || (prettier --check \"{src,amplify}/**/*.{ts,tsx}\" && eslint \"{src,amplify}/**/*.{ts,tsx}\")",
+    "format:fix": "if-env SKIP_FORMAT=true || (prettier --write \"{src,amplify}/**/*.{ts,tsx}\" && eslint --fix \"{src,amplify}/**/*.{ts,tsx}\")"
   },
   "dependencies": {
     "@aws-amplify/ui-react": "^6.5.5",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
+    "@mui/material": "^6.3.1",
+    "@mui/styles": "^6.3.1",
     "aws-amplify": "^6.6.6",
+    "if-env": "^1.0.4",
+    "mapbox-gl": "^3.9.2",
     "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react-country-flag": "^3.1.0",
+    "react-dom": "^18.2.0",
+    "react-map-gl": "^7.1.8",
+    "react-photo-gallery": "^8.0.0",
+    "react-router-dom": "^7.1.1",
+    "react-viewer": "^3.2.2"
   },
   "devDependencies": {
     "@aws-amplify/backend": "^1.5.0",

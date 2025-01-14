@@ -1,37 +1,55 @@
-import { useEffect, useState } from "react";
-import type { Schema } from "../amplify/data/resource";
-import { generateClient } from "aws-amplify/data";
+import { useState } from 'react';
+import { createBrowserRouter, RouterProvider } from 'react-router-dom';
+import Navigation from './components/navigation';
 
-const client = generateClient<Schema>();
+import { BreakpointKeys, breakpoints, Orientation } from './utils/display';
+import { useMediaQuery } from '@mui/material';
+import Home from './views/home';
+import Travel from './views/travel';
+
+const NAV_HEIGHT_PERC = 0.075;
+const MIN_NAV_HEIGHT_PX = 64;
 
 function App() {
-  const [todos, setTodos] = useState<Array<Schema["Todo"]["type"]>>([]);
+  const [height, setHeight] = useState(window.innerHeight);
+  window.addEventListener('resize', () => {
+    if (window.innerHeight !== height) setHeight(window.innerHeight);
+  });
+  const navHeight = Math.max(height * NAV_HEIGHT_PERC, MIN_NAV_HEIGHT_PX);
 
-  useEffect(() => {
-    client.models.Todo.observeQuery().subscribe({
-      next: (data) => setTodos([...data.items]),
-    });
-  }, []);
+  const mediaQueries: Record<Orientation, Partial<Record<BreakpointKeys, boolean>>> = {
+    [Orientation.WIDTH]: {
+      [BreakpointKeys.sm]: useMediaQuery(`(min-width:${breakpoints[Orientation.WIDTH][BreakpointKeys.sm]}px)`),
+      [BreakpointKeys.md]: useMediaQuery(`(min-width:${breakpoints[Orientation.WIDTH][BreakpointKeys.md]}px)`),
+      [BreakpointKeys.lg]: useMediaQuery(`(min-width:${breakpoints[Orientation.WIDTH][BreakpointKeys.lg]}px)`),
+    },
+    [Orientation.HEIGHT]: {
+      [BreakpointKeys.sm]: useMediaQuery(`(min-height:${breakpoints[Orientation.HEIGHT][BreakpointKeys.sm]}px)`),
+      [BreakpointKeys.md]: useMediaQuery(`(min-height:${breakpoints[Orientation.HEIGHT][BreakpointKeys.md]}px)`),
+      [BreakpointKeys.lg]: useMediaQuery(`(min-height:${breakpoints[Orientation.HEIGHT][BreakpointKeys.lg]}px)`),
+    },
+  };
 
-  function createTodo() {
-    client.models.Todo.create({ content: window.prompt("Todo content") });
-  }
+  const router = createBrowserRouter([
+    {
+      path: '/',
+      element: <Home />,
+    },
+    {
+      path: '/home',
+      element: <Home />,
+    },
+    {
+      path: '/travel',
+      element: <Travel mediaQueries={mediaQueries} />,
+    },
+  ]);
 
   return (
     <main>
-      <h1>My todos</h1>
-      <button onClick={createTodo}>+ new</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>{todo.content}</li>
-        ))}
-      </ul>
-      <div>
-        🥳 App successfully hosted. Try creating a new todo.
-        <br />
-        <a href="https://docs.amplify.aws/react/start/quickstart/#make-frontend-updates">
-          Review next step of this tutorial.
-        </a>
+      <Navigation height={navHeight} mediaQueries={mediaQueries} />
+      <div style={{ height: height - navHeight }}>
+        <RouterProvider router={router} />
       </div>
     </main>
   );
