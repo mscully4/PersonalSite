@@ -1,7 +1,8 @@
-import Gallery from 'react-photo-gallery';
 import { SyntheticEvent } from 'react';
 import { Modal } from '@mui/material';
 import { TravelPhoto } from '../types/travel';
+import { RowsPhotoAlbum, Photo } from 'react-photo-album';
+import 'react-photo-album/rows.css';
 
 interface ImageGalleryProps {
   galleryOpen: boolean;
@@ -11,10 +12,11 @@ interface ImageGalleryProps {
 }
 
 export default function ImageGallery(props: ImageGalleryProps) {
-  const photos = props.preparedImages.map((image) => ({
+  const photos: Photo[] = props.preparedImages.map((image) => ({
     src: image.thumbnailSrc,
     width: parseFloat(image.width),
     height: parseFloat(image.height),
+    key: image.hsh,
   }));
 
   return (
@@ -29,12 +31,18 @@ export default function ImageGallery(props: ImageGalleryProps) {
         '&::-webkit-scrollbar': {
           display: 'none',
         },
+        'backgroundColor': 'white',
       }}
     >
-      <Gallery
+      <RowsPhotoAlbum
+        spacing={8}
         photos={photos}
-        onClick={(e, obj) => {
-          props.galleryOnClick(e, obj.index);
+        componentsProps={{
+          container: {
+            style: {
+              backgroundColor: '#fff',
+            },
+          },
         }}
       />
     </Modal>

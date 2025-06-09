@@ -1,26 +1,22 @@
-import { useState, useEffect } from 'react';
-import Gallery from 'react-photo-gallery';
 import { generateClient } from 'aws-amplify/api';
+import { useEffect, useState } from 'react';
+import { Photo, RowsPhotoAlbum } from 'react-photo-album';
 import { Schema } from '../../amplify/data/resource';
+import 'react-photo-album/rows.css';
 
 const client = generateClient<Schema>();
 
-interface HomeGalleryPhoto {
-  height: number;
-  width: number;
-  src: string;
-}
-
 export default function Home() {
-  const [images, setImages] = useState<HomeGalleryPhoto[]>([]);
+  const [photos, setPhotos] = useState<Photo[]>([]);
 
   useEffect(() => {
     client.models.HomePhoto.list({ limit: 100 }).then((resp) => {
-      setImages(
+      setPhotos(
         resp.data.map((obj) => ({
           width: parseInt(obj.width),
           height: parseInt(obj.height),
           src: obj.src,
+          key: obj.hsh,
         })),
       );
     });
@@ -39,7 +35,8 @@ export default function Home() {
           scrollbarWidth: 'none',
         }}
       >
-        <Gallery photos={images} />
+        <RowsPhotoAlbum photos={photos} spacing={8} />
+
         <p
           style={{
             textAlign: 'center',

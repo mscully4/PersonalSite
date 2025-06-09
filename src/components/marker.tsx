@@ -56,7 +56,7 @@ function Marker(props: MarkerProps) {
         style={{
           height: 41,
           width: 27,
-          // @ts-ignore
+          // @ts-expect-error This works, idk why TS is complaining
           viewBox: '0 0 27 41',
           display: 'block',
           cursor: 'pointer',
