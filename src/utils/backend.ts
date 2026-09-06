@@ -7,7 +7,7 @@ export async function doPagination<T>(model: any): Promise<T[]> {
     });
     tmp.push(...resp.data);
     nextToken = resp.nextToken;
-    if (nextToken === null) {
+    if (!nextToken) {
       return tmp;
     }
   }

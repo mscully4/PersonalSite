@@ -122,7 +122,7 @@ export default function Travel(props: TravelProps) {
 
       setAlbums(albumMapping);
     });
-  });
+  }, []);
 
   useEffect(() => {
     const destinationPhotoMap: Record<string, TravelPhoto> = {};
