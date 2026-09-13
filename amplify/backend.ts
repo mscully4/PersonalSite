@@ -14,6 +14,15 @@ const backend = defineBackend({
   photoBucket,
 });
 
+// @aws-amplify/backend 1.25 dropped the DynamoDBEnableServerSideEncryption
+// parameter and now synthesizes sseEnabled: false. The deployed stacks have it
+// set to true, so without this the upgrade would silently move every table off
+// its AWS-managed KMS key onto an AWS-owned one. Pin it back on explicitly.
+const { amplifyDynamoDbTables } = backend.data.resources.cfnResources;
+for (const table of Object.values(amplifyDynamoDbTables)) {
+  table.sseSpecification = { sseEnabled: true };
+}
+
 const imagesStack = backend.createStack('ImagesStack');
 
 const bucket = new Bucket(imagesStack, 'PublicImageBucket', {
