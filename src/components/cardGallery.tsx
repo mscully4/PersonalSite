@@ -28,7 +28,7 @@ interface CardGalleryProps {
   mediaQueries: Record<Orientation, Partial<Record<BreakpointKeys, boolean>>>;
 }
 
-export default function cardGallery(props: CardGalleryProps) {
+export default function CardGallery(props: CardGalleryProps) {
   const cardOnMouseOver = (data: TravelDestination | TravelPlace) => {
     props.setHoverId(data.placeId);
     if (props.mapRef) {

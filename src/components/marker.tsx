@@ -16,7 +16,7 @@ interface MarkerProps {
 
 function Marker(props: MarkerProps) {
   // store the color in state so that it stays consistent across renders
-  const [color, _] = useState<string>(randomPinColor());
+  const [color] = useState<string>(randomPinColor());
   const { coords, placeId } = props.data;
 
   const offset: Record<string, PointLike> = {

@@ -25,7 +25,7 @@ export default function Travel(props: TravelProps) {
   const [photos, setPhotos] = useState<Record<string, TravelPhoto[]>>({});
   const [photosLoaded, setPhotosLoaded] = useState<boolean>(false);
   const [renderablePlaces, setRenderablePlaces] = useState<TravelPlace[]>([]);
-  const [_, setAlbums] = useState<Record<string, TravelAlbum[]>>({});
+  const [, setAlbums] = useState<Record<string, TravelAlbum[]>>({});
   const [destinationCardPhotos, setDestinationCardPhotos] = useState<Record<string, TravelPhoto>>({});
 
   const [galleryOpen, setGalleryOpen] = useState(false);
