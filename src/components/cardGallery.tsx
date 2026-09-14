@@ -5,9 +5,8 @@ import CardMedia from '@mui/material/CardMedia';
 import CardContent from '@mui/material/CardContent';
 import Typography from '@mui/material/Typography';
 import { GRANULARITIES, granularitySwitcher, GRANULARITY_CUTOFF } from '../utils/mapping';
-import { TravelDestination, TravelPlace, TravelPhoto } from '../types/travel';
+import { TravelDestination, TravelPlace } from '../types/travel';
 import { Dispatch, SetStateAction } from 'react';
-import CircularProgress from '@mui/material/CircularProgress';
 
 import { BreakpointKeys, Orientation } from '../utils/display';
 import { noImages } from '../utils/images';
@@ -15,16 +14,13 @@ import { useTheme } from '@mui/material';
 
 interface CardGalleryProps {
   destinations: TravelDestination[];
-  destinationCardPhotos: Record<string, TravelPhoto>;
   places: Record<string, TravelPlace[]>;
   renderablePlaces: TravelPlace[];
   mapGranularity: GRANULARITIES;
   setHoverId: (value: string | null) => void;
   mapRef: MapRef | undefined;
-  photos: Record<string, TravelPhoto[]>;
   setPreparedImages: (place: TravelPlace) => void;
   setGalleryOpen: Dispatch<SetStateAction<boolean>>;
-  photosLoaded: boolean;
   mediaQueries: Record<Orientation, Partial<Record<BreakpointKeys, boolean>>>;
 }
 
@@ -59,8 +55,7 @@ export default function CardGallery(props: CardGalleryProps) {
   const theme = useTheme();
 
   const generateDestinationCards = (destination: TravelDestination) => {
-    const photo = props.destinationCardPhotos[destination.placeId];
-    const imageSrc = photo ? photo.thumbnailSrc : noImages;
+    const imageSrc = destination.cardPhotoThumbnailSrc ?? noImages;
     return (
       <Card
         style={{ borderRadius: 10 }}
@@ -83,22 +78,16 @@ export default function CardGallery(props: CardGalleryProps) {
         onMouseOut={cardOnMouseOut}
         onClick={(e) => onCardClickDestination(e, destination)}
       >
-        {props.photosLoaded ? (
-          <CardMedia
-            component='img'
-            image={imageSrc}
-            sx={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              margin: 'auto',
-            }}
-            // classes={{
-            //   media: classes.cardImage,
-            // }}
-          />
-        ) : (
-          <CircularProgress style={{ margin: 'auto' }} />
-        )}
+        <CardMedia
+          component='img'
+          image={imageSrc}
+          loading='lazy'
+          sx={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+            margin: 'auto',
+          }}
+        />
         <CardContent
           sx={{
             display: 'grid',
@@ -141,8 +130,7 @@ export default function CardGallery(props: CardGalleryProps) {
   };
 
   const generatePlaceCard = (place: TravelPlace) => {
-    const photo = place.placeId in props.photos ? props.photos[place.placeId][0] : null;
-    const imageSrc = photo ? photo.thumbnailSrc : noImages;
+    const imageSrc = place.cardPhotoThumbnailSrc ?? noImages;
 
     return (
       <Card
@@ -166,19 +154,16 @@ export default function CardGallery(props: CardGalleryProps) {
         onMouseOut={cardOnMouseOut}
         onClick={(e) => onCardClickPlace(e, place)}
       >
-        {props.photosLoaded ? (
-          <CardMedia
-            component='img'
-            image={imageSrc}
-            sx={{
-              maxWidth: '100%',
-              maxHeight: '100%',
-              margin: 'auto',
-            }}
-          />
-        ) : (
-          <CircularProgress style={{ margin: 'auto' }} />
-        )}
+        <CardMedia
+          component='img'
+          image={imageSrc}
+          loading='lazy'
+          sx={{
+            maxWidth: '100%',
+            maxHeight: '100%',
+            margin: 'auto',
+          }}
+        />
         <CardContent>
           <Typography
             // classes={{

@@ -14,6 +14,9 @@ const schema = a
         countryCode: a.string().required(),
         coords: a.ref('Coords').required(),
         name: a.string().required(),
+        // Denormalized representative thumbnail, chosen by scripts/backfillCardPhotos.ts.
+        // Lets the card gallery render without reading the TravelPhoto table.
+        cardPhotoThumbnailSrc: a.string(),
         places: a.hasMany('TravelPlace', 'destinationId'),
       })
       .identifier(['destinationId']),
@@ -28,6 +31,8 @@ const schema = a
         destination: a.belongsTo('TravelDestination', 'destinationId'),
         coords: a.ref('Coords').required(),
         name: a.string().required(),
+        // Denormalized representative thumbnail, chosen by scripts/backfillCardPhotos.ts.
+        cardPhotoThumbnailSrc: a.string(),
         album: a.hasOne('TravelAlbum', ['placeId', 'albumId']),
       })
       .identifier(['destinationId', 'placeId']),
@@ -54,7 +59,10 @@ const schema = a
         hsh: a.string().required(),
         album: a.belongsTo('TravelAlbum', ['albumId', 'photoId']),
       })
-      .identifier(['albumId', 'photoId']),
+      .identifier(['albumId', 'photoId'])
+      // Galleries are opened one place at a time; without this the only way to
+      // read a place's photos is a full scan of the table.
+      .secondaryIndexes((index) => [index('placeId')]),
     HomePhoto: a
       .model({
         photoId: a.string().required(),

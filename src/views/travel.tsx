@@ -6,7 +6,7 @@ import CardGallery from '../components/cardGallery';
 import ImageGallery from '../components/imageGallery';
 import { MILES_FROM_CITY, getDistanceBetweenTwoPoints } from '../utils/mapping';
 import { GRANULARITY_CUTOFF, GRANULARITIES } from '../utils/mapping';
-import { TravelDestination, TravelPlace, TravelAlbum, TravelPhoto } from '../types/travel';
+import { TravelDestination, TravelPlace, TravelPhoto } from '../types/travel';
 import { BreakpointKeys, Orientation } from '../utils/display';
 import { Paper, useTheme } from '@mui/material';
 import { generateClient } from 'aws-amplify/api';
@@ -22,13 +22,10 @@ export interface TravelProps {
 export default function Travel(props: TravelProps) {
   const [destinations, setDestinations] = useState<TravelDestination[]>([]);
   const [places, setPlaces] = useState<Record<string, TravelPlace[]>>({});
-  const [photos, setPhotos] = useState<Record<string, TravelPhoto[]>>({});
-  const [photosLoaded, setPhotosLoaded] = useState<boolean>(false);
   const [renderablePlaces, setRenderablePlaces] = useState<TravelPlace[]>([]);
-  const [, setAlbums] = useState<Record<string, TravelAlbum[]>>({});
-  const [destinationCardPhotos, setDestinationCardPhotos] = useState<Record<string, TravelPhoto>>({});
 
   const [galleryOpen, setGalleryOpen] = useState(false);
+  const [galleryLoading, setGalleryLoading] = useState(false);
   const [preparedImages, _setPreparedImages] = useState<TravelPhoto[]>([]);
   const [imageViewerOpen, setImageViewerOpen] = useState(false);
   const [currImg, setCurrImg] = useState<number | null>(null);
@@ -58,20 +55,21 @@ export default function Travel(props: TravelProps) {
     }
   };
 
+  // Photos are read one place at a time, off the placeId index, when a gallery is
+  // opened. Fetching the whole table up front meant every visitor paged through
+  // all ~10k photos before a single card could render.
   const setPreparedImages = (place: TravelPlace) => {
-    _setPreparedImages(place.placeId in photos ? photos[place.placeId] : []);
-  };
-
-  const rankBestCardPhotos = (photos: TravelPhoto[]) => {
-    const desiredRatio = 4 / 3;
-    return photos.sort((a, b) => {
-      const aRatio = parseFloat(a.width) / parseFloat(a.height);
-      const bRatio = parseFloat(b.width) / parseFloat(b.height);
-      if (aRatio === bRatio) {
-        return 0;
-      }
-      return Math.abs(desiredRatio - aRatio) < Math.abs(desiredRatio - bRatio) ? -1 : 1;
-    });
+    _setPreparedImages([]);
+    setGalleryLoading(true);
+    doPagination<TravelPhoto>((page) =>
+      client.models.TravelPhoto.listTravelPhotoByPlaceId({ placeId: place.placeId, ...page }),
+    )
+      .then((photos) => _setPreparedImages(photos))
+      .catch((err) => {
+        console.error(`Failed to load photos for place ${place.placeId}`, err);
+        _setPreparedImages([]);
+      })
+      .finally(() => setGalleryLoading(false));
   };
 
   useEffect(() => {
@@ -83,7 +81,7 @@ export default function Travel(props: TravelProps) {
   useEffect(() => {
     if (!destinations) return;
 
-    doPagination<TravelPlace>(client.models.TravelPlace).then((places) => {
+    doPagination<TravelPlace>((page) => client.models.TravelPlace.list(page)).then((places) => {
       const result: Record<string, TravelPlace[]> = places.reduce((map, place) => {
         const array = map[place.destinationId] ? map[place.destinationId] : [];
         array.push(place);
@@ -96,46 +94,6 @@ export default function Travel(props: TravelProps) {
       setPlaces(result);
     });
   }, []);
-
-  useEffect(() => {
-    doPagination<TravelPhoto>(client.models.TravelPhoto).then((photos) => {
-      const photoMapping = photos.reduce((map, photo) => {
-        map[photo.placeId] = [photo].concat(map[photo.placeId] ? map[photo.placeId] : []);
-        return map;
-      }, {} as Record<string, TravelPhoto[]>);
-
-      Object.keys(photoMapping).forEach((key) => {
-        photoMapping[key] = rankBestCardPhotos(photoMapping[key]);
-      });
-
-      setPhotos(photoMapping);
-      setPhotosLoaded(true);
-    });
-  }, []);
-
-  useEffect(() => {
-    doPagination<TravelAlbum>(client.models.TravelAlbum).then((albums) => {
-      const albumMapping = albums.reduce((map, album) => {
-        map[album.placeId] = [album].concat(map[album.placeId] ? map[album.placeId] : []);
-        return map;
-      }, {} as Record<string, TravelAlbum[]>);
-
-      setAlbums(albumMapping);
-    });
-  }, []);
-
-  useEffect(() => {
-    const destinationPhotoMap: Record<string, TravelPhoto> = {};
-    destinations
-      .filter((destination) => destination.placeId in places)
-      .forEach((destination) => {
-        const photoList: TravelPhoto[] = places[destination.placeId]
-          .filter((place) => place.placeId in photos)
-          .map((place) => photos[place.placeId][0]);
-        destinationPhotoMap[destination.placeId] = rankBestCardPhotos(photoList)[0];
-      });
-    setDestinationCardPhotos({ ...destinationPhotoMap });
-  }, [destinations, places, photos]);
 
   const updateRenderablePlaces = () => {
     const mapCenter = mapRef?.getCenter();
@@ -204,16 +162,13 @@ export default function Travel(props: TravelProps) {
         />
         <CardGallery
           destinations={destinations}
-          destinationCardPhotos={destinationCardPhotos}
           places={places}
           renderablePlaces={renderablePlaces}
           mapGranularity={mapGranularity}
           setHoverId={setHoverId}
           mapRef={mapRef}
-          photos={photos}
           setGalleryOpen={setGalleryOpen}
           setPreparedImages={setPreparedImages}
-          photosLoaded={photosLoaded}
           mediaQueries={props.mediaQueries}
         />
       </Paper>
@@ -223,6 +178,7 @@ export default function Travel(props: TravelProps) {
         galleryOnClick={galleryOnClick}
         preparedImages={preparedImages}
         setGalleryOpen={setGalleryOpen}
+        loading={galleryLoading}
       />
 
       <ImageViewer

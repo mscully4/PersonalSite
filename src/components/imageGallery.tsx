@@ -1,5 +1,5 @@
 import { SyntheticEvent } from 'react';
-import { Modal } from '@mui/material';
+import { Box, CircularProgress, Modal } from '@mui/material';
 import { TravelPhoto } from '../types/travel';
 import { RowsPhotoAlbum, Photo } from 'react-photo-album';
 import 'react-photo-album/rows.css';
@@ -9,6 +9,7 @@ interface ImageGalleryProps {
   setGalleryOpen: (value: boolean) => void;
   preparedImages: TravelPhoto[];
   galleryOnClick: (event: SyntheticEvent, index: number) => void;
+  loading: boolean;
 }
 
 export default function ImageGallery(props: ImageGalleryProps) {
@@ -34,17 +35,23 @@ export default function ImageGallery(props: ImageGalleryProps) {
         'backgroundColor': 'white',
       }}
     >
-      <RowsPhotoAlbum
-        spacing={8}
-        photos={photos}
-        componentsProps={{
-          container: {
-            style: {
-              backgroundColor: '#fff',
+      {props.loading ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', padding: '48px' }}>
+          <CircularProgress />
+        </Box>
+      ) : (
+        <RowsPhotoAlbum
+          spacing={8}
+          photos={photos}
+          componentsProps={{
+            container: {
+              style: {
+                backgroundColor: '#fff',
+              },
             },
-          },
-        }}
-      />
+          }}
+        />
+      )}
     </Modal>
   );
 }
