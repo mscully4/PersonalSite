@@ -73,7 +73,14 @@ const schema = a
       })
       .identifier(['photoId']),
   })
-  .authorization((allow) => [allow.publicApiKey()]);
+  // The public API key ships in the browser bundle, so it gets read access only.
+  // The default grant is full CRUD, which meant anyone reading the bundle could
+  // create, update or delete any row -- including deleting every TravelPhoto.
+  // Writes go through Cognito instead.
+  .authorization((allow) => [
+    allow.publicApiKey().to(['read']),
+    allow.authenticated().to(['create', 'read', 'update', 'delete']),
+  ]);
 
 export type Schema = ClientSchema<typeof schema>;
 
