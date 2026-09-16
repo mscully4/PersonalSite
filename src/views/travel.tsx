@@ -12,6 +12,7 @@ import { Paper, useTheme } from '@mui/material';
 import { generateClient } from 'aws-amplify/api';
 import { Schema } from '../../amplify/data/resource';
 import { doPagination } from '../utils/backend';
+import { useWindowHeight } from '../utils/useWindowHeight';
 
 const client = generateClient<Schema>();
 
@@ -33,10 +34,7 @@ export default function Travel(props: TravelProps) {
   const [mapRef, setMapRef] = useState<MapRef>();
   const [mapGranularity, _setMapGranularity] = useState<GRANULARITIES>(GRANULARITIES.DESTINATIONS);
 
-  const [height, setHeight] = useState(window.innerHeight * 0.92);
-  window.addEventListener('resize', () => {
-    if (window.innerHeight !== height) setHeight(window.innerHeight * 0.92);
-  });
+  const height = useWindowHeight(0.92);
 
   const theme = useTheme();
 

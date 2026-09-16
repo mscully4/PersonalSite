@@ -1,8 +1,9 @@
-import { lazy, Suspense, useState } from 'react';
+import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Outlet, RouterProvider } from 'react-router-dom';
 import Navigation from './components/navigation';
 
 import { BreakpointKeys, breakpoints, Orientation } from './utils/display';
+import { useWindowHeight } from './utils/useWindowHeight';
 import { CircularProgress, useMediaQuery } from '@mui/material';
 import Home from './views/home';
 
@@ -41,10 +42,7 @@ function Layout(props: LayoutProps) {
 }
 
 function App() {
-  const [height, setHeight] = useState(window.innerHeight);
-  window.addEventListener('resize', () => {
-    if (window.innerHeight !== height) setHeight(window.innerHeight);
-  });
+  const height = useWindowHeight();
   const navHeight = Math.max(height * NAV_HEIGHT_PERC, MIN_NAV_HEIGHT_PX);
 
   const mediaQueries: MediaQueries = {
