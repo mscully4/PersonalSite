@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import Navigation from './components/navigation';
 
 import { BreakpointKeys, breakpoints, Orientation } from './utils/display';
-import { useMediaQuery } from '@mui/material';
+import { CircularProgress, useMediaQuery } from '@mui/material';
 import Home from './views/home';
-import Travel from './views/travel';
+
+// Travel pulls in mapbox-gl, which is by far the largest thing the site ships.
+// Loading it lazily keeps it off the home page, which has no map.
+const Travel = lazy(() => import('./views/travel'));
 
 const NAV_HEIGHT_PERC = 0.075;
 const MIN_NAV_HEIGHT_PX = 64;
@@ -41,7 +44,17 @@ function App() {
     },
     {
       path: '/travel',
-      element: <Travel mediaQueries={mediaQueries} />,
+      element: (
+        <Suspense
+          fallback={
+            <div style={{ display: 'flex', height: '100%', alignItems: 'center', justifyContent: 'center' }}>
+              <CircularProgress />
+            </div>
+          }
+        >
+          <Travel mediaQueries={mediaQueries} />
+        </Suspense>
+      ),
     },
   ]);
 
