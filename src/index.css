@@ -70,11 +70,13 @@ a {
 
 @font-face {
   font-family: "allura";
-  src: local("Allura"), url("./assets/fonts/Allura.ttf") format("truetype");
+  src: local("Allura"), url("./assets/fonts/Allura.woff2") format("woff2");
+  font-display: swap;
 }
 
 @font-face {
   font-family: "EB Garamond";
   src: local("EB Garamond"),
-    url("./assets/fonts/EBGaramond.ttf") format("truetype");
+    url("./assets/fonts/EBGaramond.woff2") format("woff2");
+  font-display: swap;
 }
