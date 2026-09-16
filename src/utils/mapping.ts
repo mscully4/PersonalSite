@@ -25,12 +25,8 @@ export function granularitySwitcher<T, V>(granularity: GRANULARITIES, dest: T, p
   }
 }
 
-export const metersToMiles = (meters: number) => {
+const metersToMiles = (meters: number) => {
   return meters * 0.000621371;
-};
-
-export const milesToMeters = (miles: number) => {
-  return miles * 1609.34;
 };
 
 export const getDistanceBetweenTwoPoints = (lat1: number, long1: number, lat2: number, long2: number) => {
