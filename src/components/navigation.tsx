@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { BreakpointKeys, Orientation } from '../utils/display';
 import { NavIcon, navIcons } from '../utils/images';
 import SvgIcon from '@mui/material/SvgIcon';
@@ -13,8 +14,8 @@ export default function Navigation(props: NavigationProps) {
 
   const createIcon = (navIcon: NavIcon) => {
     return (
-      <a
-        href={navIcon.href}
+      <Link
+        to={navIcon.href}
         title={navIcon.title}
         style={{
           marginLeft: 5,
@@ -37,7 +38,7 @@ export default function Navigation(props: NavigationProps) {
             <path key={i} d={path}></path>
           ))}
         </SvgIcon>
-      </a>
+      </Link>
     );
   };
 
