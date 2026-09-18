@@ -1,5 +1,6 @@
-export const noImages =
-  'https://michaeljscullydotcom-pro-staticresourcesbucket0f9-10vd4r973olct.s3.us-west-2.amazonaws.com/travel/NoImages.jpg';
+// Served from the same CloudFront distribution as every other image on the
+// site, rather than direct from a bucket left over from the pre-Amplify stack
+export const noImages = 'https://d36scyq8rcuj12.cloudfront.net/travel/NoImages.jpg';
 
 export interface NavIcon {
   href: string;
