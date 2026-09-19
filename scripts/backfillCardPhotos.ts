@@ -11,6 +11,15 @@
  * Apply:              npx tsx scripts/backfillCardPhotos.ts --apply
  *
  * Requires amplify_outputs.json at the repo root.
+ *
+ * NOTE: --apply no longer works. The public API key this client uses was
+ * restricted to read in 90048ad, so the mutations below come back Unauthorized.
+ * The dry run still reports what would change, and the CLI at
+ * ../personal-site-cli owns writing these fields now -- see
+ * AmplifyClient.refresh_place_card_photo and refresh_destination_card_photo,
+ * which reach DynamoDB directly with AWS credentials. This file stays as the
+ * reference for the selection rule, which the two implementations must keep in
+ * agreement.
  */
 import { Amplify } from 'aws-amplify';
 import { generateClient } from 'aws-amplify/api';
@@ -24,7 +33,7 @@ const client = generateClient<Schema>();
 const APPLY = process.argv.includes('--apply');
 const DESIRED_RATIO = 4 / 3;
 
-type Photo = { placeId: string; thumbnailSrc: string; width: string; height: string };
+type Photo = { photoId: string; placeId: string; thumbnailSrc: string; width: string; height: string };
 
 async function drain<T>(
   list: (page: { nextToken?: string | null }) => Promise<{ data: T[]; nextToken?: string | null }>,
@@ -39,14 +48,21 @@ async function drain<T>(
   return all;
 }
 
-/** Closest to 4:3 wins — the same rule the client used to apply at runtime. */
-function closestToFourThirds<T extends { width: string; height: string }>(photos: T[]): T | undefined {
-  return [...photos].sort((a, b) => {
-    const aRatio = parseFloat(a.width) / parseFloat(a.height);
-    const bRatio = parseFloat(b.width) / parseFloat(b.height);
-    if (aRatio === bRatio) return 0;
-    return Math.abs(DESIRED_RATIO - aRatio) < Math.abs(DESIRED_RATIO - bRatio) ? -1 : 1;
-  })[0];
+/**
+ * Closest to 4:3 wins, with the lowest photoId breaking a tie.
+ *
+ * Most of the library is 2048x1536, which is exactly 4:3, so ties are the norm
+ * rather than the exception -- one Prague destination had 28 candidates with six
+ * or more at distance zero. Without the tie-break the winner came down to the
+ * order rows happened to arrive in, so this and the CLI's closest_to_four_thirds
+ * could pick different photos from the same set, and neither was idempotent.
+ * Both sort on (distance, photoId) so they agree and stay put.
+ */
+function closestToFourThirds<T extends { width: string; height: string; photoId: string }>(
+  photos: T[],
+): T | undefined {
+  const distance = (p: T) => Math.abs(DESIRED_RATIO - parseFloat(p.width) / parseFloat(p.height));
+  return [...photos].sort((a, b) => distance(a) - distance(b) || a.photoId.localeCompare(b.photoId))[0];
 }
 
 async function main() {
