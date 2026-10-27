@@ -1,0 +1,38 @@
+name: CI
+
+# Amplify builds and deploys on push to main, but it only runs `npm run build`.
+# Formatting, linting and the tests were local-only and entirely opt-in, so a
+# branch could go green in Amplify with lint errors and failing tests.
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # ci, not install: this is also the check that the lockfile stays usable
+      # from a clean checkout, which has broken twice (82bb35d, and the
+      # @opentelemetry/core override in package.json).
+      - run: npm ci
+
+      - run: npm run format:check
+
+      - run: npm test
+
+      # amplify_outputs.json is generated at deploy time and gitignored, but
+      # src/main.tsx imports it, so tsc and vite cannot resolve it without a
+      # stand-in. Only its presence matters here -- nothing in a build or a
+      # typecheck reads the contents.
+      - name: Stub amplify_outputs.json
+        run: echo '{"version":"1.3"}' > amplify_outputs.json
+
+      - run: npm run build
