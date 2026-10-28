@@ -1,5 +1,7 @@
-/// <reference types="vitest" />
-import { defineConfig } from 'vite';
+// defineConfig comes from vitest/config, not vite: as of Vitest 3 the `test`
+// key is no longer merged into Vite's own config type, so importing from 'vite'
+// typechecks as an unknown property.
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 // https://vitejs.dev/config/

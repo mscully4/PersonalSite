@@ -27,8 +27,14 @@ actually broken: the 4:3 card photo rule, `doPagination`'s token loop, `granular
 and the haversine, and `useWindowHeight`'s listener lifecycle. Views and components are
 untested.
 
-Vitest is pinned to `^2.x` because 3+ requires Vite 6 and this project is still on Vite 5.
-Bumping one means bumping the other.
+Vitest and Vite move together — Vitest's peer range tracks Vite majors, so bumping one means
+bumping the other. `vite.config.ts` must import `defineConfig` from `vitest/config` rather
+than `vite`; since Vitest 3 the `test` key is no longer merged into Vite's own config type,
+and importing from `vite` fails `tsc -p tsconfig.node.json` (which nothing in CI runs, so the
+error is easy to miss).
+
+Node is pinned in `.nvmrc`, which CI reads via `node-version-file`. Vite 8 requires
+`^20.19.0 || >=22.12.0`.
 
 ### CI (`.github/workflows/ci.yml`)
 

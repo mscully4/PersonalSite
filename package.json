@@ -42,11 +42,10 @@
     "@types/react-dom": "^19.0.0",
     "@typescript-eslint/eslint-plugin": "^7.2.0",
     "@typescript-eslint/parser": "^7.2.0",
-    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react": "^6.1.2",
     "aws-cdk": "^2.1018.0",
     "aws-cdk-lib": "^2.200.1",
     "constructs": "^10.4.2",
-    "esbuild": "^0.20.2",
     "eslint": "^8.57.0",
     "eslint-plugin-react-hooks": "^4.6.0",
     "eslint-plugin-react-refresh": "^0.4.6",
@@ -54,8 +53,8 @@
     "prettier": "^2.8.8",
     "tsx": "^4.19.4",
     "typescript": "^5.4.5",
-    "vite": "^5.4.10",
-    "vitest": "^2.1.9"
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5"
   },
   "overrides": {
     "@opentelemetry/core": "^2.8.0"

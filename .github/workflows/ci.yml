@@ -14,9 +14,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Read from .nvmrc so CI, Amplify's build image and a local checkout
+      # cannot drift apart. Vite 8 requires ^20.19.0 || >=22.12.0 and fails
+      # the build outright on anything older.
       - uses: actions/setup-node@v4
         with:
-          node-version: '22'
+          node-version-file: .nvmrc
           cache: npm
 
       # ci, not install: this is also the check that the lockfile stays usable
