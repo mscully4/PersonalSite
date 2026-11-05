@@ -183,7 +183,8 @@ export default function Travel(props: TravelProps) {
         isOpen={imageViewerOpen}
         toggleViewer={toggleViewer}
         views={preparedImages}
-        currentIndex={currImg!}
+        currentIndex={currImg ?? 0}
+        setCurrentIndex={setCurrImg}
       />
     </div>
   );

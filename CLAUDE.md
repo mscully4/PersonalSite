@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project
 
-Frontend for michaeljscully.com — React 19 + TypeScript on Vite 5, with an AWS Amplify Gen 2 backend defined in `amplify/` (auth, AppSync data API, S3 storage). Two views: a photo grid home page and a map-driven travel gallery.
+Frontend for michaeljscully.com — React 19 + TypeScript on Vite 8, with an AWS Amplify Gen 2 backend defined in `amplify/` (auth, AppSync data API, S3 storage). Two views: a photo grid home page and a map-driven travel gallery.
 
 ## Commands
 
@@ -24,8 +24,12 @@ Tests are Vitest, co-located as `*.test.ts(x)` under `src/` and `scripts/`. The 
 environment is `node`; the few that need a DOM opt in per-file with
 `// @vitest-environment jsdom`. Coverage is deliberately narrow — the pure logic that has
 actually broken: the 4:3 card photo rule, `doPagination`'s token loop, `granularitySwitcher`
-and the haversine, and `useWindowHeight`'s listener lifecycle. Views and components are
-untested.
+and the haversine, `useWindowHeight`'s listener lifecycle, and the thumbnail → lightbox
+wiring in `imageGallery`/`imageViewer`. Views are untested.
+
+jsdom does no layout, so `react-photo-album` sees a 0 `clientWidth` and renders no photos;
+its test stubs `HTMLElement.prototype.clientWidth`. The lightbox's `close` fires after its
+fade-out, so assert on it with `waitFor`.
 
 Vitest and Vite move together — Vitest's peer range tracks Vite majors, so bumping one means
 bumping the other. `vite.config.ts` must import `defineConfig` from `vitest/config` rather
@@ -60,7 +64,7 @@ After any dependency change, verify with a real `npm ci` in a scratch dir (copy 
 
 Backend: `npm ci --cache .npm` then `npx ampx pipeline-deploy --branch $AWS_BRANCH --app-id $AWS_APP_ID`. Frontend appends `VITE_MAPBOX_TOKEN=$VITE_MAPBOX_TOKEN` to `.env` before `npm run build`; artifact dir is `dist`.
 
-The Amplify app lives in **us-east-2**, not the `us-west-2` default — app id `d3rfdjnjzvbkoy`, branch `main`, auto-build on. Any `aws` or `ampx` command needs `AWS_REGION=us-east-2` or it will report that nothing exists. A push to `main` deploys the backend too, so back a schema change with a template diff against the deployed stack before pushing.
+The Amplify app lives in **us-east-2**, not the `us-west-2` default — app id `d3rfdjnjzvbkoy`, branch `main`, auto-build on. `ampx` needs `AWS_REGION=us-east-2`; the installed `aws` CLI is v1, which ignores `AWS_REGION`, so pass it `--region us-east-2`. Without the region both report that nothing exists. A push to `main` deploys the backend too, so back a schema change with a template diff against the deployed stack before pushing.
 
 ## Architecture
 
@@ -103,6 +107,10 @@ The rule choosing the representative photo lives in [scripts/cardPhotoRule.ts](s
 
 Map granularity is the central UI concept: [src/utils/mapping.ts](src/utils/mapping.ts) defines `GRANULARITIES.DESTINATIONS` vs `.PLACES`, switching at zoom `GRANULARITY_CUTOFF` (10). `granularitySwitcher(granularity, dest, place)` is used everywhere to pick between the destination and place variant — of data, of handlers, of render logic. `updateRenderablePlaces` finds the destination nearest the map center via haversine (`getDistanceBetweenTwoPoints`) and shows its places only within `MILES_FROM_CITY` (200).
 
-Components: [map.tsx](src/components/map.tsx) (react-map-gl / MapBox-GL) → [marker.tsx](src/components/marker.tsx) (custom SVG pin, color randomized once into state so it survives re-render; z-index derived from latitude so southern pins sit on top); [cardGallery.tsx](src/components/cardGallery.tsx) (hover a card → `flyTo`, click a destination → zoom past the cutoff, click a place → open gallery); [imageGallery.tsx](src/components/imageGallery.tsx) (MUI `Modal` + `RowsPhotoAlbum` of thumbnails, with a spinner while that place's photos are fetched); [imageViewer.tsx](src/components/imageViewer.tsx) (`react-viewer` full-size lightbox). Gallery and viewer are mutually exclusive — `toggleViewer` swaps them.
+Components: [map.tsx](src/components/map.tsx) (react-map-gl / MapBox-GL) → [marker.tsx](src/components/marker.tsx) (custom SVG pin, color randomized once into state so it survives re-render; z-index derived from latitude so southern pins sit on top); [cardGallery.tsx](src/components/cardGallery.tsx) (hover a card → `flyTo`, click a destination → zoom past the cutoff, click a place → open gallery); [imageGallery.tsx](src/components/imageGallery.tsx) (MUI `Modal` + `RowsPhotoAlbum` of thumbnails, with a spinner while that place's photos are fetched); [imageViewer.tsx](src/components/imageViewer.tsx) (`yet-another-react-lightbox` full-size viewer with the Zoom and Download plugins). Gallery and viewer are mutually exclusive — `toggleViewer` swaps them, and closing the viewer reopens the gallery.
+
+Clicking a thumbnail must go through `RowsPhotoAlbum`'s `onClick` → `galleryOnClick`. When the gallery moved from `react-photo-gallery` to `react-photo-album` (6234ee2) that `onClick` was dropped and the viewer was unreachable for 16 months; `galleryOnClick` was still a required prop, so nothing flagged it.
+
+Markers set z-indexes up to ~180000 (latitude-derived, plus 99999 on hover). The map has `isolation: isolate` so those stay inside its stacking context; remove it and pins paint over the lightbox.
 
 Mapbox CSS is loaded from a CDN `<link>` in `index.html`, not imported.

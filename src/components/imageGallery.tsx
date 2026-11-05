@@ -13,11 +13,12 @@ interface ImageGalleryProps {
 }
 
 export default function ImageGallery(props: ImageGalleryProps) {
-  const photos: Photo[] = props.preparedImages.map((image) => ({
+  const photos: Photo[] = props.preparedImages.map((image, index, images) => ({
     src: image.thumbnailSrc,
     width: parseFloat(image.width),
     height: parseFloat(image.height),
     key: image.hsh,
+    label: `Open photo ${index + 1} of ${images.length}`,
   }));
 
   return (
@@ -43,6 +44,7 @@ export default function ImageGallery(props: ImageGalleryProps) {
         <RowsPhotoAlbum
           spacing={8}
           photos={photos}
+          onClick={({ event, index }) => props.galleryOnClick(event, index)}
           componentsProps={{
             container: {
               style: {

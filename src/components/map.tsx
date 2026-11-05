@@ -55,6 +55,10 @@ function Map(props: MapProps) {
         width: '100%',
         height: '100%',
         visibility: props.isVisible ? 'visible' : 'hidden',
+        // Markers order themselves with z-indexes in the tens of thousands (see
+        // marker.tsx). Without a stacking context here those escape the map and
+        // paint over the gallery and the lightbox.
+        isolation: 'isolate',
       }}
       mapStyle='mapbox://styles/mapbox/streets-v9'
       mapboxAccessToken={MAPBOX_TOKEN}
