@@ -1,5 +1,4 @@
 import Lightbox from 'yet-another-react-lightbox';
-import Download from 'yet-another-react-lightbox/plugins/download';
 import Zoom from 'yet-another-react-lightbox/plugins/zoom';
 import 'yet-another-react-lightbox/styles.css';
 import { TravelPhoto } from '../types/travel';
@@ -26,7 +25,7 @@ export default function ImageViewer(props: ImageViewerProps) {
       close={() => props.toggleViewer(false)}
       index={currentIndex}
       slides={slides}
-      plugins={[Zoom, Download]}
+      plugins={[Zoom]}
       on={{ view: ({ index }) => props.setCurrentIndex(index) }}
       controller={{ closeOnBackdropClick: true }}
     />

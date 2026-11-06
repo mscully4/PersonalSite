@@ -51,6 +51,13 @@ describe('ImageViewer', () => {
     expect(currentSlideSrc()).toBe('https://images.example/a.jpg');
   });
 
+  // CloudFront sends no CORS headers, so the Download plugin cannot fetch the
+  // image; it falls back to opening it in a new tab and logs CORS errors.
+  it('offers no download button', () => {
+    renderViewer();
+    expect(screen.queryByRole('button', { name: 'Download' })).toBeNull();
+  });
+
   it('renders nothing while closed', () => {
     renderViewer({ isOpen: false });
     expect(document.querySelector('.yarl__root')).toBeNull();
